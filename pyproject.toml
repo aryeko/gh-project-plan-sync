@@ -51,7 +51,7 @@ pytest-cov = "^7.0.0"
 pytest-asyncio = "^1.3.0"
 commitlint = ">=1.3"
 poethepoet = ">=0.40,<0.48"
-python-semantic-release = {version = "10.5.3", python = ">=3.11,<4.0"}
+python-semantic-release = {version = "10.6.1", python = ">=3.11,<4.0"}
 # ariadne-codegen is run via pipx (click conflict with python-semantic-release)
 # pipx run --spec "ariadne-codegen>=0.17,<0.18" ariadne-codegen
 
