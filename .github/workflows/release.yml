@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  POETRY_VERSION: "2.3.2"
+  POETRY_VERSION: "2.4.1"
 
 jobs:
   # ── Job 1: Semantic Release — bump, changelog, tag ─────────────
@@ -75,7 +75,7 @@ jobs:
 
       - name: Python Semantic Release
         id: psr
-        uses: python-semantic-release/python-semantic-release@350c48fcb3ffcdfd2e0a235206bc2ecea6b69df0 # v10.5.3
+        uses: python-semantic-release/python-semantic-release@39dd2052f2ce8282a5d932c31d58a2ca06d2550e # v10.6.1
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           vcs_release: "true"
@@ -181,7 +181,7 @@ jobs:
           path: dist/
 
       - name: Create GitHub Release + upload assets
-        uses: python-semantic-release/publish-action@310a9983a0ae878b29f3aac778d7c77c1db27378 # v10.5.3
+        uses: python-semantic-release/publish-action@5a5718ce47b892ef699f2972dae122297771d641 # v10.6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.release.outputs.tag }}
