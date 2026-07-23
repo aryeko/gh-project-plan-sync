@@ -120,6 +120,7 @@ from .operations import (
     SEARCH_ISSUES_GQL,
     UPDATE_ISSUE_GQL,
     UPDATE_PROJECT_FIELD_GQL,
+    UPDATE_PROJECT_ITERATION_FIELD_GQL,
 )
 from .remove_blocked_by import (
     RemoveBlockedBy,
@@ -155,6 +156,11 @@ from .update_project_field import (
     UpdateProjectField,
     UpdateProjectFieldUpdateProjectV2ItemFieldValue,
     UpdateProjectFieldUpdateProjectV2ItemFieldValueProjectV2Item,
+)
+from .update_project_iteration_field import (
+    UpdateProjectIterationField,
+    UpdateProjectIterationFieldUpdateProjectV2ItemFieldValue,
+    UpdateProjectIterationFieldUpdateProjectV2ItemFieldValueProjectV2Item,
 )
 
 __all__ = [
@@ -280,11 +286,15 @@ __all__ = [
     "SearchIssuesSearchPageInfo",
     "UPDATE_ISSUE_GQL",
     "UPDATE_PROJECT_FIELD_GQL",
+    "UPDATE_PROJECT_ITERATION_FIELD_GQL",
     "UpdateIssue",
     "UpdateIssueUpdateIssue",
     "UpdateIssueUpdateIssueIssue",
     "UpdateProjectField",
     "UpdateProjectFieldUpdateProjectV2ItemFieldValue",
     "UpdateProjectFieldUpdateProjectV2ItemFieldValueProjectV2Item",
+    "UpdateProjectIterationField",
+    "UpdateProjectIterationFieldUpdateProjectV2ItemFieldValue",
+    "UpdateProjectIterationFieldUpdateProjectV2ItemFieldValueProjectV2Item",
     "Upload",
 ]

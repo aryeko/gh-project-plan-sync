@@ -57,15 +57,15 @@ flowchart TB
 **Required behavior:**
 - Each sub-step must be safe to retry (`ensure_*` semantics)
 - Partial failures must raise `CreateItemPartialFailureError` with created item identity + `completed_steps`
-- Re-running sync must converge to one correctly configured item, not duplicates
+- Re-running sync must converge to one correctly configured item, not duplicates. Discovery finds partial creates; any explicit plan `fields` are reapplied on that recovery sync even when the issue itself is otherwise unchanged.
 - Metadata must be present in body at issue creation time so discovery can find partially configured items
 
 ## Key Design: Reconciliation Ownership
 
-`update_item()` applies only plan-authoritative fields: `title`, `body`, `item_type`, `labels`, `size`.
+`update_item()` applies only plan-authoritative fields: `title`, `body`, `item_type`, `labels`, `size`, and explicit per-item `fields`. Explicit `fields` are reapplied on every sync, including when all other item properties are already in sync.
 
 - **Labels:** Additive (`ensure label present`), not replace-all. Provider must preserve non-PlanPilot labels.
-- **Provider-authoritative after create:** `status`, `priority`, `iteration` from `field_config` are creation defaults, not continuously enforced.
+- **Provider-authoritative after create:** `status`, `priority`, `iteration` from `field_config` are creation defaults, not continuously enforced. A plan item's explicit `fields` entries override the matching default during creation and remain plan-authoritative afterward.
 
 ## Create-Type Strategy Flow
 

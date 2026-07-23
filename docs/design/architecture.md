@@ -141,6 +141,7 @@ classDiagram
         +Verification? verification
         +SpecRef? spec_ref
         +Scope? scope
+        +dict~str, str~ fields
     }
 
     class Plan {

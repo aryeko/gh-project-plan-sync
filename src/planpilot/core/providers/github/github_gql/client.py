@@ -28,6 +28,7 @@ from .operations import (
     SEARCH_ISSUES_GQL,
     UPDATE_ISSUE_GQL,
     UPDATE_PROJECT_FIELD_GQL,
+    UPDATE_PROJECT_ITERATION_FIELD_GQL,
 )
 
 if TYPE_CHECKING:
@@ -55,6 +56,7 @@ if TYPE_CHECKING:
     from .search_issues import SearchIssues
     from .update_issue import UpdateIssue
     from .update_project_field import UpdateProjectField
+    from .update_project_iteration_field import UpdateProjectIterationField
 
 
 def gql(q: str) -> str:
@@ -340,3 +342,23 @@ class GitHubGraphQLClient(AsyncBaseClient):
         )
         data = self.get_data(response)
         return UpdateProjectField.model_validate(data)
+
+    async def update_project_iteration_field(
+        self, project_id: str, item_id: str, field_id: str, option_id: str, **kwargs: Any
+    ) -> "UpdateProjectIterationField":
+        from .update_project_iteration_field import UpdateProjectIterationField
+
+        variables: dict[str, object] = {
+            "projectId": project_id,
+            "itemId": item_id,
+            "fieldId": field_id,
+            "optionId": option_id,
+        }
+        response = await self.execute(
+            query=UPDATE_PROJECT_ITERATION_FIELD_GQL,
+            operation_name="UpdateProjectIterationField",
+            variables=variables,
+            **kwargs,
+        )
+        data = self.get_data(response)
+        return UpdateProjectIterationField.model_validate(data)

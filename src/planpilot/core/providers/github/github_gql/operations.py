@@ -24,6 +24,7 @@ __all__ = [
     "SEARCH_ISSUES_GQL",
     "UPDATE_ISSUE_GQL",
     "UPDATE_PROJECT_FIELD_GQL",
+    "UPDATE_PROJECT_ITERATION_FIELD_GQL",
 ]
 
 ADD_BLOCKED_BY_GQL = """
@@ -381,6 +382,18 @@ UPDATE_PROJECT_FIELD_GQL = """
 mutation UpdateProjectField($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
   updateProjectV2ItemFieldValue(
     input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}
+  ) {
+    projectV2Item {
+      id
+    }
+  }
+}
+"""
+
+UPDATE_PROJECT_ITERATION_FIELD_GQL = """
+mutation UpdateProjectIterationField($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+  updateProjectV2ItemFieldValue(
+    input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: {iterationId: $optionId}}
   ) {
     projectV2Item {
       id

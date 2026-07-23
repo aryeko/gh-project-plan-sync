@@ -99,8 +99,8 @@ async def test_aenter_builds_context(monkeypatch: pytest.MonkeyPatch) -> None:
 
     async def fake_resolve_project_fields(
         project_id: str,
-    ) -> tuple[str | None, list[dict[str, str]], ResolvedField | None, ResolvedField | None, ResolvedField | None]:
-        return "size-f", [{"id": "opt-1", "name": "S"}], None, None, None
+    ) -> tuple[str | None, list[dict[str, str]], dict[str, ResolvedField]]:
+        return "size-f", [{"id": "opt-1", "name": "S"}], {}
 
     monkeypatch.setattr(provider, "_open_transport", fake_enter_transport)
     monkeypatch.setattr(provider, "_resolve_repo_context", fake_resolve_repo)
@@ -139,8 +139,8 @@ async def test_aenter_falls_back_to_label_when_no_issue_types(monkeypatch: pytes
 
     async def fake_resolve_project_fields(
         project_id: str,
-    ) -> tuple[str | None, list[dict[str, str]], ResolvedField | None, ResolvedField | None, ResolvedField | None]:
-        return None, [], None, None, None
+    ) -> tuple[str | None, list[dict[str, str]], dict[str, ResolvedField]]:
+        return None, [], {}
 
     monkeypatch.setattr(provider, "_open_transport", fake_enter_transport)
     monkeypatch.setattr(provider, "_resolve_repo_context", fake_resolve_repo)

@@ -42,7 +42,15 @@ async def resolve_project_context(provider: Any) -> tuple[str, str, int, str | N
 async def resolve_project_fields(  # pragma: no cover
     provider: Any,
     project_id: str,
-) -> tuple[str | None, list[dict[str, str]], ResolvedField | None, ResolvedField | None, ResolvedField | None]:
+) -> tuple[str | None, list[dict[str, str]], dict[str, ResolvedField]]:
+    """Resolve the project's fields once per sync run.
+
+    Every single-select and iteration field is captured by name into ``resolved_fields`` so
+    ``ensure_project_fields`` can apply arbitrary per-item field values (Status, Priority, and any
+    board-specific field such as Horizon or Area) without this module knowing their names ahead of
+    time. Size is also captured so an explicit ``input.fields`` value can override its derived
+    t-shirt value; it keeps a dedicated slot for that derived-value conversion.
+    """
     from planpilot.core.providers.github.github_gql.fetch_project_fields import (
         FetchProjectFieldsNodeProjectV2,
         FetchProjectFieldsNodeProjectV2FieldsNodesProjectV2IterationField,
@@ -54,13 +62,11 @@ async def resolve_project_fields(  # pragma: no cover
 
     if not isinstance(data.node, FetchProjectFieldsNodeProjectV2):
         _LOG.warning("Could not resolve project fields for %s", project_id)
-        return None, [], None, None, None
+        return None, [], {}
 
     size_field_id: str | None = None
     size_options: list[dict[str, str]] = []
-    status_field: ResolvedField | None = None
-    priority_field: ResolvedField | None = None
-    iteration_field: ResolvedField | None = None
+    resolved_fields: dict[str, ResolvedField] = {}
     size_field_name = provider._field_config.size_field
 
     for node in data.node.fields.nodes or []:
@@ -70,19 +76,15 @@ async def resolve_project_fields(  # pragma: no cover
 
         if isinstance(node, FetchProjectFieldsNodeProjectV2FieldsNodesProjectV2SingleSelectField):
             options = [{"id": o.id, "name": o.name} for o in node.options]
+            resolved_fields[name] = ResolvedField(id=node.id, name=name, kind="single_select", options=options)
             if name == size_field_name:
                 size_field_id = node.id
                 size_options = options
-            elif name == "Status":
-                status_field = ResolvedField(id=node.id, name=name, kind="single_select", options=options)
-            elif name == "Priority":
-                priority_field = ResolvedField(id=node.id, name=name, kind="single_select", options=options)
         elif isinstance(node, FetchProjectFieldsNodeProjectV2FieldsNodesProjectV2IterationField):
-            if name == "Iteration":
-                iters = [{"id": i.id, "name": i.title} for i in node.configuration.iterations]
-                iteration_field = ResolvedField(id=node.id, name=name, kind="iteration", options=iters)
+            iters = [{"id": i.id, "name": i.title} for i in node.configuration.iterations]
+            resolved_fields[name] = ResolvedField(id=node.id, name=name, kind="iteration", options=iters)
 
-    return size_field_id, size_options, status_field, priority_field, iteration_field
+    return size_field_id, size_options, resolved_fields
 
 
 async def ensure_project_item(provider: Any, issue_id: str) -> str:  # pragma: no cover
@@ -108,22 +110,41 @@ async def ensure_project_fields(
     project_item_id: str,
     input: CreateItemInput,
 ) -> None:  # pragma: no cover
-    if (
-        not project_item_id
-        or provider.context.project_id is None
-        or not input.size
-        or not provider.context.size_field_id
-    ):
-        return
-
-    option_id = resolve_option_id(provider.context.size_options, input.size)
-    if option_id is None:
+    if not project_item_id or provider.context.project_id is None:
         return
 
     client = provider._require_client()
-    await client.update_project_field(
-        project_id=provider.context.project_id,
-        item_id=project_item_id,
-        field_id=provider.context.size_field_id,
-        option_id=option_id,
-    )
+
+    if input.size and provider.context.size_field_id:
+        option_id = resolve_option_id(provider.context.size_options, input.size)
+        if option_id is not None:
+            await client.update_project_field(
+                project_id=provider.context.project_id,
+                item_id=project_item_id,
+                field_id=provider.context.size_field_id,
+                option_id=option_id,
+            )
+
+    for field_name, option_name in input.fields.items():
+        resolved_field = provider.context.resolved_fields.get(field_name)
+        if resolved_field is None:
+            _LOG.warning("Project has no field named %r; skipping value %r", field_name, option_name)
+            continue
+        option_id = resolve_option_id(resolved_field.options, option_name)
+        if option_id is None:
+            _LOG.warning("Field %r has no option named %r; skipping", field_name, option_name)
+            continue
+        if resolved_field.kind == "iteration":
+            await client.update_project_iteration_field(
+                project_id=provider.context.project_id,
+                item_id=project_item_id,
+                field_id=resolved_field.id,
+                option_id=option_id,
+            )
+        else:
+            await client.update_project_field(
+                project_id=provider.context.project_id,
+                item_id=project_item_id,
+                field_id=resolved_field.id,
+                option_id=option_id,
+            )

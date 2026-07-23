@@ -54,6 +54,7 @@ class PlanItem(BaseModel):
     verification: Verification | None = None
     spec_ref: SpecRef | None = None
     scope: Scope | None = None
+    fields: dict[str, str] = Field(default_factory=dict)
 
 
 class Plan(BaseModel):

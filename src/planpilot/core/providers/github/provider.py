@@ -70,16 +70,12 @@ class GitHubProvider(Provider):
 
         size_field_id: str | None = None
         size_options: list[dict[str, str]] = []
-        status_field: ResolvedField | None = None
-        priority_field: ResolvedField | None = None
-        iteration_field: ResolvedField | None = None
+        resolved_fields: dict[str, ResolvedField] = {}
         if project_id:
             (
                 size_field_id,
                 size_options,
-                status_field,
-                priority_field,
-                iteration_field,
+                resolved_fields,
             ) = await self._resolve_project_fields(project_id)
 
         create_type_strategy, create_type_map = self._resolve_create_type_policy(owner_type)
@@ -100,9 +96,7 @@ class GitHubProvider(Provider):
             project_id=project_id,
             size_field_id=size_field_id,
             size_options=size_options,
-            status_field=status_field,
-            priority_field=priority_field,
-            iteration_field=iteration_field,
+            resolved_fields=resolved_fields,
             supports_sub_issues=True,
             supports_blocked_by=True,
             supports_discovery_filters=True,
@@ -199,7 +193,7 @@ class GitHubProvider(Provider):
                 mapped = self.context.create_type_map.get(input.item_type.value)
                 if mapped:
                     effective_labels = sorted(set(effective_labels).union({mapped}))
-        if input.size is not None and self.context.project_id is not None:
+        if (input.size is not None or input.fields) and self.context.project_id is not None:
             project_item_id = await self._ensure_project_item(item_id)
             await self._ensure_project_fields(
                 project_item_id,
@@ -209,6 +203,7 @@ class GitHubProvider(Provider):
                     item_type=input.item_type or existing.item_type or PlanItemType.TASK,
                     labels=effective_labels,
                     size=input.size,
+                    fields=input.fields,
                 ),
             )
 
@@ -385,7 +380,7 @@ class GitHubProvider(Provider):
 
     async def _resolve_project_fields(  # pragma: no cover
         self, project_id: str
-    ) -> tuple[str | None, list[dict[str, str]], ResolvedField | None, ResolvedField | None, ResolvedField | None]:
+    ) -> tuple[str | None, list[dict[str, str]], dict[str, ResolvedField]]:
         return await project_ops.resolve_project_fields(self, project_id)
 
     async def _search_issue_nodes(self, query: str) -> list[IssueCore]:  # pragma: no cover

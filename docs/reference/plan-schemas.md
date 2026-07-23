@@ -112,6 +112,46 @@ Important optional fields:
 - `verification`
 - `scope`
 - `spec_ref`
+- `fields`
+
+## Project field values (`fields`)
+
+`fields` is an optional `{"<GitHub field name>": "<option or iteration title>"}` map applied to
+the item's project-board entry on create and reapplied on every sync. GitHub supports values for
+single-select fields and iteration fields only; field and value names must match the target
+project. An iteration value is matched against that field's iteration title:
+
+```json
+{
+  "id": "S1",
+  "title": "Checkout API",
+  "goal": "Expose stable payment endpoint",
+  "parent_id": "E1",
+  "requirements": ["R2"],
+  "acceptance_criteria": ["AC2"],
+  "fields": {
+    "Priority": "High",
+    "Iteration": "Sprint 12",
+    "Horizon": "Now",
+    "Area": "Web"
+  }
+}
+```
+
+An unrecognized field or field value is skipped with a warning, not a sync failure — check the
+warning against the project's actual field and option/iteration names if a value doesn't show up
+on the board.
+
+An explicit value for the configured size field (by default, `fields["Size"]`) is supported. It
+overrides the value derived from `estimate.tshirt` when both are present.
+
+`field_config.status`/`.priority`/`.iteration` in `planpilot.json` (see
+[config-reference.md](config-reference.md)) still work as run-level defaults for `Status`,
+`Priority`, and `Iteration` specifically, applied only when an item doesn't set its own
+`fields["Status"]` etc. Those defaults seed newly created items only; they are never reapplied on
+an update, so a value changed on the live board afterward is not silently overwritten by a rerun.
+An item's own `fields` values are the opposite — always plan-authoritative and reapplied on every
+sync, even when every other item property is already in sync.
 
 ## Validation notes
 

@@ -52,13 +52,14 @@ The provider contains **zero inline GraphQL**. All operations are defined in `.g
 | Add labels | `AddLabels` | `addLabelsToLabelable` |
 | Remove labels | `RemoveLabels` | `removeLabelsFromLabelable` |
 | Add to project | `AddProjectItem` | `addProjectV2ItemById` |
-| Set project field | `UpdateProjectField` | `updateProjectV2ItemFieldValue` |
+| Set single-select project field | `UpdateProjectField` | `updateProjectV2ItemFieldValue` with `singleSelectOptionId` |
+| Set iteration project field | `UpdateProjectIterationField` | `updateProjectV2ItemFieldValue` with `iterationId` |
 | Add sub-issue | `AddSubIssue` | With `replaceParent` support |
 | Remove sub-issue | `RemoveSubIssue` | Remove parent-child relation |
 | Add blocked-by | `AddBlockedBy` | Set dependency relation |
 | Remove blocked-by | `RemoveBlockedBy` | Remove dependency relation |
 
-**Total: 9 queries + 13 mutations + 1 shared fragment = 23 `.graphql` files**
+**Total: 9 queries + 14 mutations + 1 shared fragment = 24 `.graphql` files**
 
 All operations are GraphQL. Discovery uses the GraphQL `search` query (full-text matching on titles and bodies; use `in:body` qualifier for body-only matches).
 
@@ -79,7 +80,7 @@ flowchart TD
     H --> I{label strategy?}
     I -- label --> J[reconcile managed labels]
     I -- issue-type --> K[ensure discovery labels]
-    J --> L[optional project field updates]
+    J --> L[apply explicit project fields]
     K --> L
     L --> M[return GitHubItem]
 ```
@@ -88,17 +89,17 @@ flowchart TD
 
 `CreateIssueInput` supports `labelIds`, `projectV2Ids`, `issueTypeId`, and `parentIssueId` directly. The previous implementation required 5+ sequential API calls per new issue:
 
-```
+```text
 create_issue -> set_issue_type -> add_labels (x N) -> add_project_item -> set_project_fields
 ```
 
-The optimized flow sets labels, issue type, and project in a single `createIssue` mutation. Only project field assignment (e.g. Size) requires follow-up calls:
+The optimized flow sets labels, issue type, and project in a single `createIssue` mutation. Project field assignment (e.g. Size, Priority, or Iteration) requires a lookup plus one follow-up mutation for each field:
 
-```
-create_issue(labelIds, issueTypeId, projectV2Ids) -> get_project_item_id -> set_project_fields
+```text
+create_issue(labelIds, issueTypeId, projectV2Ids) -> get_project_item_id -> set_project_field (per field)
 ```
 
-**5+ API calls reduced to 1-3** per new issue (1 if no project fields, 3 with Size).
+**5+ API calls reduced to 1 + lookup + one update per project field** (one call if no project fields).
 
 For the `label` strategy, the type label (e.g. `type:epic`) is included in `labelIds` so it is also set atomically - no separate `addLabels` call is needed.
 
@@ -165,7 +166,7 @@ class GitHubProvider(Provider):
 2. Construct `GitHubGraphQLClient` with the httpx client
 3. Resolve repo context (repo ID, issue type IDs, resolve/create label)
 4. Resolve project context (parse `board_url`, resolve owner type, fetch project ID)
-5. Resolve project fields via `FetchProjectFields` (Size field ID + options, Status, Priority, Iteration)
+5. Resolve project fields via `FetchProjectFields` (every single-select and iteration field, including the configured Size field, by name)
 6. Resolve create-type policy from `FieldConfig`
 7. Store in `GitHubProviderContext`
 
@@ -187,9 +188,7 @@ class GitHubProviderContext(ProviderContext):
     project_owner_type: str              # "org" | "user"
     project_id: str | None
     project_item_ids: dict[str, str]
-    status_field: ResolvedField | None
-    priority_field: ResolvedField | None
-    iteration_field: ResolvedField | None
+    resolved_fields: dict[str, ResolvedField]  # every single-select/iteration field, by name
     size_field_id: str | None
     size_options: list[dict[str, str]]
     supports_sub_issues: bool
@@ -300,7 +299,7 @@ src/planpilot/core/providers/github/
 ├── mapper.py                    # Utility functions
 ├── _retrying_transport.py       # httpx transport with retry/rate-limit
 ├── schema.graphql               # Vendored GitHub schema
-├── operations/                  # .graphql operation files (23 files)
+├── operations/                  # .graphql operation files (24 files)
 │   ├── fragments.graphql        # Shared IssueCore fragment
 │   ├── fetch_repo.graphql
 │   ├── fetch_org_project.graphql
@@ -320,6 +319,7 @@ src/planpilot/core/providers/github/
 │   ├── remove_labels.graphql
 │   ├── add_project_item.graphql
 │   ├── update_project_field.graphql
+│   ├── update_project_iteration_field.graphql
 │   ├── add_sub_issue.graphql
 │   ├── remove_sub_issue.graphql
 │   ├── add_blocked_by.graphql

@@ -50,6 +50,7 @@ classDiagram
         +Verification? verification
         +SpecRef? spec_ref
         +Scope? scope
+        +dict~str, str~ fields
     }
 
     class Plan {
@@ -91,7 +92,7 @@ classDiagram
 
 - **Required (all types):** `id`, `type`, `title`, `goal`, `requirements`, `acceptance_criteria`
 - **Hierarchy:** `parent_id` (canonical), `sub_item_ids` (optional consistency projection), `depends_on`
-- **Optional (all types):** `motivation`, `spec_ref`, `scope`, `assumptions`, `risks`, `estimate`, `success_metrics`
+- **Optional (all types):** `motivation`, `spec_ref`, `scope`, `assumptions`, `risks`, `estimate`, `success_metrics`, `fields`
 - **Task-only:** `verification`
 
 **Dependencies:** None
@@ -104,8 +105,8 @@ classDiagram
 
 | Type | Fields | Purpose |
 |------|--------|---------|
-| `CreateItemInput` | `title`, `body`, `item_type: PlanItemType`, `labels`, `size` | Create a new item |
-| `UpdateItemInput` | `title`, `body`, `item_type`, `labels`, `size` | Reconcile an existing item (non-None fields applied) |
+| `CreateItemInput` | `title`, `body`, `item_type: PlanItemType`, `labels`, `size`, `fields: dict[str, str]` | Create a new item |
+| `UpdateItemInput` | `title`, `body`, `item_type`, `labels`, `size`, `fields: dict[str, str]` | Reconcile an existing item (non-None fields applied) |
 | `ItemSearchFilters` | `labels: list[str]`, `body_contains: str` | Search/discovery filters |
 | `ItemFields` | Base fields shared by inputs/filters | |
 
