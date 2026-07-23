@@ -53,13 +53,13 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 For one-off skill runs, prefer the pinned runtime command used by the plugin:
 
 ```bash
-uvx --from planpilot==2.6.0 planpilot --version
+uvx --from planpilot==2.7.0 planpilot --version
 ```
 
 For a persistent local install, install the same release:
 
 ```bash
-uv tool install "planpilot==2.6.0"
+uv tool install "planpilot==2.7.0"
 planpilot --version
 ```
 
@@ -82,14 +82,14 @@ pipx ensurepath
 You may need to restart your shell after `ensurepath`.
 
 ```bash
-pipx install "planpilot==2.6.0"
+pipx install "planpilot==2.7.0"
 planpilot --version
 ```
 
 **Option C — via `pip3` (last resort):**
 
 ```bash
-pip3 install "planpilot==2.6.0"
+pip3 install "planpilot==2.7.0"
 planpilot --version
 ```
 
@@ -160,13 +160,13 @@ Expected frontmatter should include:
 
 ```bash
 # If installed via uv
-uv tool install --force "planpilot==2.6.0"
+uv tool install --force "planpilot==2.7.0"
 
 # If installed via pipx
-pipx install --force "planpilot==2.6.0"
+pipx install --force "planpilot==2.7.0"
 
 # If installed via pip3
-pip3 install --upgrade "planpilot==2.6.0"
+pip3 install --upgrade "planpilot==2.7.0"
 ```
 
 **Update skills** (re-copy or re-fetch `SKILL.md` for each skill):

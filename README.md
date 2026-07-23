@@ -139,7 +139,7 @@ claude plugin install planpilot@planpilot
 The plugin ships the shared skills and Claude slash commands. The `plan-sync` skill runs the released CLI through the exact PyPI runtime pin:
 
 ```bash
-uvx --from planpilot==2.6.0 planpilot --version
+uvx --from planpilot==2.7.0 planpilot --version
 ```
 
 Then use:

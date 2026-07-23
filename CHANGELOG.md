@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v2.7.0 (2026-07-23)
+
+### Bug Fixes
+
+- Reconcile per-item project fields ([#151](https://github.com/aryeko/planpilot/pull/151),
+  [`63c0d61`](https://github.com/aryeko/planpilot/commit/63c0d6187ac218e2a5b7210a37844db621357594))
+
+### Documentation
+
+- Clarify project field API calls ([#151](https://github.com/aryeko/planpilot/pull/151),
+  [`63c0d61`](https://github.com/aryeko/planpilot/commit/63c0d6187ac218e2a5b7210a37844db621357594))
+
+### Features
+
+- Apply per-item project field values on sync ([#151](https://github.com/aryeko/planpilot/pull/151),
+  [`63c0d61`](https://github.com/aryeko/planpilot/commit/63c0d6187ac218e2a5b7210a37844db621357594))
+
+
 ## v2.6.0 (2026-06-30)
 
 ### Chores

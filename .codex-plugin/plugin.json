@@ -1,6 +1,6 @@
 {
   "name": "planpilot",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "Reusable planning workflows for PRDs, technical specs, and GitHub Issues + Projects v2 sync.",
   "skills": "./skills/",
   "author": {

@@ -1,6 +1,6 @@
 """Public API surface for PlanPilot."""
 
-__version__ = "2.6.0"
+__version__ = "2.7.0"
 
 from planpilot.core.auth import (
     create_init_token_resolver,

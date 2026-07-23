@@ -45,7 +45,7 @@ source "$HOME/.local/bin/env" 2>/dev/null || export PATH="$HOME/.local/bin:$PATH
 Install the exact planpilot release:
 
 ```bash
-uv tool install "planpilot==2.6.0"
+uv tool install "planpilot==2.7.0"
 ```
 
 If this succeeds, skip to Step 3.
@@ -79,7 +79,7 @@ If `pipx` is **not found**, install it:
 After installing pipx, you may need to open a new shell or `source ~/.bashrc` / `source ~/.zshrc` for PATH to update.
 
 ```bash
-pipx install "planpilot==2.6.0"
+pipx install "planpilot==2.7.0"
 ```
 
 If this succeeds, skip to Step 3.
@@ -87,7 +87,7 @@ If this succeeds, skip to Step 3.
 **Option C — via `pip3` (last resort):**
 
 ```bash
-pip3 install "planpilot==2.6.0"
+pip3 install "planpilot==2.7.0"
 ```
 
 If this fails, STOP and tell the user the error output.
@@ -98,7 +98,7 @@ If this fails, STOP and tell the user the error output.
 planpilot --version
 ```
 
-If this fails or does not print `planpilot 2.6.0`, STOP and report the failure to the user.
+If this fails or does not print `planpilot 2.7.0`, STOP and report the failure to the user.
 
 ## Step 4: Install the skills
 
@@ -167,13 +167,13 @@ If the user asks to update planpilot:
 
 ```bash
 # If installed via uv
-uv tool install --force "planpilot==2.6.0"
+uv tool install --force "planpilot==2.7.0"
 
 # If installed via pipx
-pipx install --force "planpilot==2.6.0"
+pipx install --force "planpilot==2.7.0"
 
 # If installed via pip3
-pip3 install --upgrade "planpilot==2.6.0"
+pip3 install --upgrade "planpilot==2.7.0"
 ```
 
 ## Step 7: Report to user

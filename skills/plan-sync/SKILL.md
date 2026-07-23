@@ -17,7 +17,7 @@ Before any action, list available skills and invoke all that apply. If installed
 
 ## Prerequisites
 
-- `planpilot` CLI accessible — preferably through the pinned zero-install command `uvx --from planpilot==2.6.0 planpilot`; a local `planpilot` or `python3 -m planpilot` fallback is allowed only when it reports the exact same version
+- `planpilot` CLI accessible — preferably through the pinned zero-install command `uvx --from planpilot==2.7.0 planpilot`; a local `planpilot` or `python3 -m planpilot` fallback is allowed only when it reports the exact same version
 - `gh` CLI installed and authenticated (scopes: `repo`, `project`)
 
 ## When to Use
@@ -460,9 +460,9 @@ Run preflight **before** config check — you need a working `planpilot` to run 
 
 Try each invocation in order until one succeeds:
 
-1. `uvx --from planpilot==2.6.0 planpilot --version` → output must be `planpilot 2.6.0`; set `PLANPILOT_CMD="uvx --from planpilot==2.6.0 planpilot"`
-2. `planpilot --version` → output must be `planpilot 2.6.0`; set `PLANPILOT_CMD="planpilot"`
-3. `python3 -m planpilot --version` → output must be `planpilot 2.6.0`; set `PLANPILOT_CMD="python3 -m planpilot"`
+1. `uvx --from planpilot==2.7.0 planpilot --version` → output must be `planpilot 2.7.0`; set `PLANPILOT_CMD="uvx --from planpilot==2.7.0 planpilot"`
+2. `planpilot --version` → output must be `planpilot 2.7.0`; set `PLANPILOT_CMD="planpilot"`
+3. `python3 -m planpilot --version` → output must be `planpilot 2.7.0`; set `PLANPILOT_CMD="python3 -m planpilot"`
 
 If all three fail or only mismatched versions are available, STOP and direct the user to install or run the pinned release — see https://github.com/aryeko/planpilot/blob/main/skills/INSTALL.md.
 

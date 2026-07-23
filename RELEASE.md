@@ -50,7 +50,7 @@ The smoke test (`scripts/smoke-test.sh`) runs after TestPyPI publish and validat
 Claude and Codex plugins are installed from the GitHub repository root. The shared `plan-sync` skill runs the CLI through the exact PyPI artifact:
 
 ```bash
-uvx --from planpilot==2.6.0 planpilot
+uvx --from planpilot==2.7.0 planpilot
 ```
 
 `poetry run poe check` includes `poetry run poe release-surfaces`, which validates that plugin manifests, marketplace entries, root payload directories, docs examples, and runtime pins all match `pyproject.toml`. During release, semantic-release bumps the configured version variables and `release.yml` runs `scripts/check_release_surfaces.py --fix` before build/publish.

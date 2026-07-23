@@ -42,7 +42,7 @@ Then invoke skills with prefixed commands:
 The `plan-sync` skill invokes the released CLI through the exact PyPI runtime pin:
 
 ```bash
-uvx --from planpilot==2.6.0 planpilot --version
+uvx --from planpilot==2.7.0 planpilot --version
 ```
 
 ---
@@ -56,7 +56,7 @@ codex plugin marketplace add aryeko/planpilot
 codex plugin add planpilot@planpilot
 ```
 
-Codex does not consume Claude-only slash command or hook metadata. The shared `plan-sync` skill still uses `uvx --from planpilot==2.6.0 planpilot` for the CLI runtime.
+Codex does not consume Claude-only slash command or hook metadata. The shared `plan-sync` skill still uses `uvx --from planpilot==2.7.0 planpilot` for the CLI runtime.
 
 ---
 
@@ -114,7 +114,7 @@ Invoke `/planpilot:sync` and point it at your PRD or spec. The skill generates `
 |---------|-----|
 | Commands not registered | Reinstall: `claude plugin install planpilot@planpilot` |
 | Codex skills not available | Reinstall: `codex plugin add planpilot@planpilot` |
-| CLI runtime unavailable | Verify `uvx --from planpilot==2.6.0 planpilot --version`; local `planpilot` or `python3 -m planpilot` fallbacks must print `planpilot 2.6.0` |
+| CLI runtime unavailable | Verify `uvx --from planpilot==2.7.0 planpilot --version`; local `planpilot` or `python3 -m planpilot` fallbacks must print `planpilot 2.7.0` |
 | Sync fails with auth error | Check `auth` field in `planpilot.json`; run `planpilot init` to regenerate |
 | Skill not invoked by agent | Verify skill files exist at `~/.agents/skills/*/SKILL.md` |
 

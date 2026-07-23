@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "planpilot",
-      "version": "2.6.0",
+      "version": "2.7.0",
       "description": "Claude Code skills and commands for planning workflows: create PRDs, tech specs, and sync plans to GitHub Issues + Projects v2",
       "license": "MIT",
       "homepage": "https://github.com/aryeko/planpilot",

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "planpilot"
-version = "2.6.0"
+version = "2.7.0"
 description = "Sync roadmap plans (epics, stories, tasks) to GitHub Issues and Projects v2"
 readme = "README.md"
 license = "MIT"

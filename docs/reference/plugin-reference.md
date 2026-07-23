@@ -35,10 +35,10 @@ The Codex plugin is installed from the same GitHub source and exposes the shared
 The plugin source comes from GitHub. The `plan-sync` runtime uses the exact released PyPI artifact:
 
 ```bash
-uvx --from planpilot==2.6.0 planpilot --version
+uvx --from planpilot==2.7.0 planpilot --version
 ```
 
-Local `planpilot` or `python3 -m planpilot` fallbacks are valid only when they print `planpilot 2.6.0`.
+Local `planpilot` or `python3 -m planpilot` fallbacks are valid only when they print `planpilot 2.7.0`.
 
 ### Agent self-install
 
