@@ -64,7 +64,7 @@ flowchart TD
 | `sync_path` | No | Default from scaffold is `.plans/sync-map.json` |
 | `label` | No | Discovery/ownership label, default `planpilot` |
 | `max_concurrent` | No | Integer `1..10`; default `1` |
-| `field_config` | No | Provider field and create-type preferences. `status`/`priority`/`iteration` seed the project's `Status`/`Priority`/`Iteration` fields on newly **created** items only — never reapplied on update, so a value changed on the live board afterward is not overwritten by a rerun. A plan item's own `fields` map (see [plan-schemas.md](plan-schemas.md#project-field-values-fields)) overrides these per item and applies to any field the project has, on both create and update. |
+| `field_config` | No | Provider field and create-type preferences. `status`/`priority`/`iteration` seed the project's `Status`/`Priority`/`Iteration` fields on newly **created** items only — never reapplied on update. A plan item's own `fields` map (see [plan-schemas.md](plan-schemas.md#project-field-values-fields)) overrides these per item and is reapplied on every sync. GitHub supports values for its single-select and iteration fields only; an explicit value for the configured `size_field` overrides any derived t-shirt size. |
 
 ## Validation rules
 

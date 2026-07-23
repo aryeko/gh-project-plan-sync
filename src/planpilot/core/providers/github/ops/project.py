@@ -48,8 +48,8 @@ async def resolve_project_fields(  # pragma: no cover
     Every single-select and iteration field is captured by name into ``resolved_fields`` so
     ``ensure_project_fields`` can apply arbitrary per-item field values (Status, Priority, and any
     board-specific field such as Horizon or Area) without this module knowing their names ahead of
-    time. Size keeps its own dedicated slot because it has t-shirt-to-option conversion logic that
-    the generic path does not.
+    time. Size is also captured so an explicit ``input.fields`` value can override its derived
+    t-shirt value; it keeps a dedicated slot for that derived-value conversion.
     """
     from planpilot.core.providers.github.github_gql.fetch_project_fields import (
         FetchProjectFieldsNodeProjectV2,
@@ -76,11 +76,10 @@ async def resolve_project_fields(  # pragma: no cover
 
         if isinstance(node, FetchProjectFieldsNodeProjectV2FieldsNodesProjectV2SingleSelectField):
             options = [{"id": o.id, "name": o.name} for o in node.options]
+            resolved_fields[name] = ResolvedField(id=node.id, name=name, kind="single_select", options=options)
             if name == size_field_name:
                 size_field_id = node.id
                 size_options = options
-            else:
-                resolved_fields[name] = ResolvedField(id=node.id, name=name, kind="single_select", options=options)
         elif isinstance(node, FetchProjectFieldsNodeProjectV2FieldsNodesProjectV2IterationField):
             iters = [{"id": i.id, "name": i.title} for i in node.configuration.iterations]
             resolved_fields[name] = ResolvedField(id=node.id, name=name, kind="iteration", options=iters)
@@ -135,9 +134,17 @@ async def ensure_project_fields(
         if option_id is None:
             _LOG.warning("Field %r has no option named %r; skipping", field_name, option_name)
             continue
-        await client.update_project_field(
-            project_id=provider.context.project_id,
-            item_id=project_item_id,
-            field_id=resolved_field.id,
-            option_id=option_id,
-        )
+        if resolved_field.kind == "iteration":
+            await client.update_project_iteration_field(
+                project_id=provider.context.project_id,
+                item_id=project_item_id,
+                field_id=resolved_field.id,
+                option_id=option_id,
+            )
+        else:
+            await client.update_project_field(
+                project_id=provider.context.project_id,
+                item_id=project_item_id,
+                field_id=resolved_field.id,
+                option_id=option_id,
+            )

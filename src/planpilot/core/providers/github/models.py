@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Literal
 
 from planpilot.core.providers.base import ProviderContext
 
@@ -11,7 +12,7 @@ from planpilot.core.providers.base import ProviderContext
 class ResolvedField:
     id: str
     name: str
-    kind: str
+    kind: Literal["single_select", "iteration"]
     options: list[dict[str, str]] = field(default_factory=list)
 
 

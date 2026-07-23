@@ -214,6 +214,7 @@ class SyncEngine:
             and existing_item.item_type == plan_item.type
             and labels_match
             and size_match
+            and not plan_item.fields
         ):
             self._progress.item_done("Enrich")
             return

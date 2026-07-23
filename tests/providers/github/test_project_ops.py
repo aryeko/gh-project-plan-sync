@@ -5,10 +5,12 @@ from typing import Any
 
 import pytest
 
+from planpilot.core.contracts.config import FieldConfig
 from planpilot.core.contracts.item import CreateItemInput
 from planpilot.core.contracts.plan import PlanItemType
+from planpilot.core.providers.github.github_gql.fetch_project_fields import FetchProjectFields
 from planpilot.core.providers.github.models import ResolvedField
-from planpilot.core.providers.github.ops.project import ensure_project_fields
+from planpilot.core.providers.github.ops.project import ensure_project_fields, resolve_project_fields
 
 
 class _FakeClient:
@@ -16,7 +18,54 @@ class _FakeClient:
         self.calls: list[dict[str, str]] = []
 
     async def update_project_field(self, *, project_id: str, item_id: str, field_id: str, option_id: str) -> None:
-        self.calls.append({"project_id": project_id, "item_id": item_id, "field_id": field_id, "option_id": option_id})
+        self.calls.append(
+            {
+                "operation": "single_select",
+                "project_id": project_id,
+                "item_id": item_id,
+                "field_id": field_id,
+                "option_id": option_id,
+            }
+        )
+
+    async def update_project_iteration_field(
+        self, *, project_id: str, item_id: str, field_id: str, option_id: str
+    ) -> None:
+        self.calls.append(
+            {
+                "operation": "iteration",
+                "project_id": project_id,
+                "item_id": item_id,
+                "field_id": field_id,
+                "option_id": option_id,
+            }
+        )
+
+
+class _FieldResolutionClient:
+    async def fetch_project_fields(self, *, project_id: str) -> FetchProjectFields:
+        assert project_id == "project-id"
+        return FetchProjectFields.model_validate(
+            {
+                "node": {
+                    "__typename": "ProjectV2",
+                    "fields": {
+                        "nodes": [
+                            {
+                                "__typename": "ProjectV2SingleSelectField",
+                                "id": "size-field",
+                                "name": "Size",
+                                "dataType": "SINGLE_SELECT",
+                                "options": [
+                                    {"id": "opt-s", "name": "S"},
+                                    {"id": "opt-xl", "name": "XL"},
+                                ],
+                            }
+                        ]
+                    },
+                }
+            }
+        )
 
 
 def _make_provider(
@@ -48,6 +97,26 @@ def _create_input(*, size: str | None = None, fields: dict[str, str] | None = No
 
 
 @pytest.mark.asyncio
+async def test_resolve_project_fields_keeps_configured_size_in_explicit_fields() -> None:
+    client = _FieldResolutionClient()
+    provider = SimpleNamespace(
+        _field_config=FieldConfig(size_field="Size"),
+        _require_client=lambda: client,
+    )
+
+    size_field_id, size_options, resolved_fields = await resolve_project_fields(provider, "project-id")
+
+    assert size_field_id == "size-field"
+    assert size_options == [{"id": "opt-s", "name": "S"}, {"id": "opt-xl", "name": "XL"}]
+    assert resolved_fields["Size"] == ResolvedField(
+        id="size-field",
+        name="Size",
+        kind="single_select",
+        options=[{"id": "opt-s", "name": "S"}, {"id": "opt-xl", "name": "XL"}],
+    )
+
+
+@pytest.mark.asyncio
 async def test_ensure_project_fields_noop_without_project_item_id() -> None:
     provider, client = _make_provider()
 
@@ -75,7 +144,13 @@ async def test_ensure_project_fields_applies_size() -> None:
     await ensure_project_fields(provider, "PVTI_1", _create_input(size="S"))
 
     assert client.calls == [
-        {"project_id": "project-id", "item_id": "PVTI_1", "field_id": "size-field", "option_id": "opt-s"}
+        {
+            "operation": "single_select",
+            "project_id": "project-id",
+            "item_id": "PVTI_1",
+            "field_id": "size-field",
+            "option_id": "opt-s",
+        }
     ]
 
 
@@ -95,7 +170,13 @@ async def test_ensure_project_fields_applies_generic_single_select_field() -> No
     await ensure_project_fields(provider, "PVTI_1", _create_input(fields={"Priority": "High"}))
 
     assert client.calls == [
-        {"project_id": "project-id", "item_id": "PVTI_1", "field_id": "priority-field", "option_id": "opt-high"}
+        {
+            "operation": "single_select",
+            "project_id": "project-id",
+            "item_id": "PVTI_1",
+            "field_id": "priority-field",
+            "option_id": "opt-high",
+        }
     ]
 
 
@@ -147,7 +228,7 @@ async def test_ensure_project_fields_skips_unknown_option_name() -> None:
 
 
 @pytest.mark.asyncio
-async def test_ensure_project_fields_applies_iteration_field_like_single_select() -> None:
+async def test_ensure_project_fields_applies_iteration_field_with_iteration_operation() -> None:
     provider, client = _make_provider(
         resolved_fields={
             "Iteration": ResolvedField(
@@ -162,5 +243,46 @@ async def test_ensure_project_fields_applies_iteration_field_like_single_select(
     await ensure_project_fields(provider, "PVTI_1", _create_input(fields={"Iteration": "active"}))
 
     assert client.calls == [
-        {"project_id": "project-id", "item_id": "PVTI_1", "field_id": "iteration-field", "option_id": "iter-1"}
+        {
+            "operation": "iteration",
+            "project_id": "project-id",
+            "item_id": "PVTI_1",
+            "field_id": "iteration-field",
+            "option_id": "iter-1",
+        }
+    ]
+
+
+@pytest.mark.asyncio
+async def test_ensure_project_fields_explicit_size_field_overrides_derived_size() -> None:
+    provider, client = _make_provider(
+        size_field_id="size-field",
+        size_options=[{"id": "opt-s", "name": "S"}, {"id": "opt-xl", "name": "XL"}],
+        resolved_fields={
+            "Size": ResolvedField(
+                id="size-field",
+                name="Size",
+                kind="single_select",
+                options=[{"id": "opt-s", "name": "S"}, {"id": "opt-xl", "name": "XL"}],
+            ),
+        },
+    )
+
+    await ensure_project_fields(provider, "PVTI_1", _create_input(size="S", fields={"Size": "XL"}))
+
+    assert client.calls == [
+        {
+            "operation": "single_select",
+            "project_id": "project-id",
+            "item_id": "PVTI_1",
+            "field_id": "size-field",
+            "option_id": "opt-s",
+        },
+        {
+            "operation": "single_select",
+            "project_id": "project-id",
+            "item_id": "PVTI_1",
+            "field_id": "size-field",
+            "option_id": "opt-xl",
+        },
     ]

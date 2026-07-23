@@ -50,6 +50,7 @@ classDiagram
         +Verification? verification
         +SpecRef? spec_ref
         +Scope? scope
+        +dict~str, str~ fields
     }
 
     class Plan {
@@ -91,7 +92,7 @@ classDiagram
 
 - **Required (all types):** `id`, `type`, `title`, `goal`, `requirements`, `acceptance_criteria`
 - **Hierarchy:** `parent_id` (canonical), `sub_item_ids` (optional consistency projection), `depends_on`
-- **Optional (all types):** `motivation`, `spec_ref`, `scope`, `assumptions`, `risks`, `estimate`, `success_metrics`
+- **Optional (all types):** `motivation`, `spec_ref`, `scope`, `assumptions`, `risks`, `estimate`, `success_metrics`, `fields`
 - **Task-only:** `verification`
 
 **Dependencies:** None
