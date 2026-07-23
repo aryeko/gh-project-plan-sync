@@ -104,8 +104,8 @@ classDiagram
 
 | Type | Fields | Purpose |
 |------|--------|---------|
-| `CreateItemInput` | `title`, `body`, `item_type: PlanItemType`, `labels`, `size` | Create a new item |
-| `UpdateItemInput` | `title`, `body`, `item_type`, `labels`, `size` | Reconcile an existing item (non-None fields applied) |
+| `CreateItemInput` | `title`, `body`, `item_type: PlanItemType`, `labels`, `size`, `fields: dict[str, str]` | Create a new item |
+| `UpdateItemInput` | `title`, `body`, `item_type`, `labels`, `size`, `fields: dict[str, str]` | Reconcile an existing item (non-None fields applied) |
 | `ItemSearchFilters` | `labels: list[str]`, `body_contains: str` | Search/discovery filters |
 | `ItemFields` | Base fields shared by inputs/filters | |
 

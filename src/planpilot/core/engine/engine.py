@@ -146,6 +146,7 @@ class SyncEngine:
             item_type=plan_item.type,
             labels=[self._config.label],
             size=plan_item.estimate.tshirt if plan_item.estimate is not None else None,
+            fields=self._effective_create_fields(plan_item),
         )
 
         try:
@@ -223,6 +224,11 @@ class SyncEngine:
             item_type=plan_item.type,
             labels=desired_labels,
             size=desired_size,
+            # Config-level status/priority/iteration defaults are intentionally NOT reapplied here
+            # (see _effective_create_fields) - a rerun must never silently overwrite a field a human
+            # or agent has since moved on the live board (e.g. Status triaged from Inbox to Ready).
+            # Only fields the plan item explicitly declares are pushed on update.
+            fields=dict(plan_item.fields),
         )
 
         updated_item = await self._guarded(self._provider.update_item(entry.id, update_input))
@@ -404,6 +410,17 @@ class SyncEngine:
             {item_objects[plan_item_id].id for plan_item_id in relation_targets if plan_item_id in item_objects}
         )
         await prime(provider_ids)
+
+    def _effective_create_fields(self, plan_item: PlanItem) -> dict[str, str]:
+        """Merge run-level field defaults with a plan item's explicit field values.
+
+        `field_config.status`/`.priority`/`.iteration` seed newly created items only - see the
+        comment on the `UpdateItemInput` construction in `_enrich_item` for why they are not
+        reapplied on update. An item's own `fields` always wins over the run-level default.
+        """
+        fc = self._config.field_config
+        defaults = {"Status": fc.status, "Priority": fc.priority, "Iteration": fc.iteration}
+        return {**defaults, **plan_item.fields}
 
     def _desired_labels_for_item(self, item_type: PlanItemType) -> list[str]:
         labels = [self._config.label]

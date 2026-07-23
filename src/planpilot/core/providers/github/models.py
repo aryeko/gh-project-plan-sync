@@ -23,9 +23,7 @@ class GitHubProviderContext(ProviderContext):
     project_owner_type: str
     project_id: str | None = None
     project_item_ids: dict[str, str] = field(default_factory=dict)
-    status_field: ResolvedField | None = None
-    priority_field: ResolvedField | None = None
-    iteration_field: ResolvedField | None = None
+    resolved_fields: dict[str, ResolvedField] = field(default_factory=dict)
     size_field_id: str | None = None
     size_options: list[dict[str, str]] = field(default_factory=list)
     supports_sub_issues: bool = False

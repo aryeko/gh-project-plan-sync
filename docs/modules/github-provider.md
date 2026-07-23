@@ -165,7 +165,7 @@ class GitHubProvider(Provider):
 2. Construct `GitHubGraphQLClient` with the httpx client
 3. Resolve repo context (repo ID, issue type IDs, resolve/create label)
 4. Resolve project context (parse `board_url`, resolve owner type, fetch project ID)
-5. Resolve project fields via `FetchProjectFields` (Size field ID + options, Status, Priority, Iteration)
+5. Resolve project fields via `FetchProjectFields` (Size field ID + options, plus every other single-select and iteration field by name)
 6. Resolve create-type policy from `FieldConfig`
 7. Store in `GitHubProviderContext`
 
@@ -187,9 +187,7 @@ class GitHubProviderContext(ProviderContext):
     project_owner_type: str              # "org" | "user"
     project_id: str | None
     project_item_ids: dict[str, str]
-    status_field: ResolvedField | None
-    priority_field: ResolvedField | None
-    iteration_field: ResolvedField | None
+    resolved_fields: dict[str, ResolvedField]  # every non-Size single-select/iteration field, by name
     size_field_id: str | None
     size_options: list[dict[str, str]]
     supports_sub_issues: bool

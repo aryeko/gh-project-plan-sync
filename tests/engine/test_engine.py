@@ -492,6 +492,81 @@ async def test_enrich_updates_when_size_drift_even_if_title_body_and_type_match(
 
 
 @pytest.mark.asyncio
+async def test_create_merges_config_field_defaults_with_item_overrides(tmp_path: Path) -> None:
+    provider = FakeProvider()
+    renderer = FakeRenderer()
+    config = make_config(tmp_path).model_copy(
+        update={"field_config": FieldConfig(status="Backlog", priority="P1", iteration="active")}
+    )
+    plan = Plan(
+        items=[
+            PlanItem(
+                id="S1",
+                type=PlanItemType.STORY,
+                title="Story",
+                fields={"Priority": "High", "Horizon": "Now"},
+            )
+        ]
+    )
+
+    await SyncEngine(provider, renderer, config).sync(plan, "plan-fields")
+
+    # Config defaults seed Status/Iteration (item doesn't override them); the item's own
+    # Priority wins over the config default; Horizon has no config default and passes through.
+    assert provider.create_calls[0].fields == {
+        "Status": "Backlog",
+        "Priority": "High",
+        "Iteration": "active",
+        "Horizon": "Now",
+    }
+
+
+@pytest.mark.asyncio
+async def test_enrich_reapplies_only_explicit_item_fields_not_config_defaults(tmp_path: Path) -> None:
+    provider = FakeProvider()
+    renderer = FakeRenderer()
+    config = make_config(tmp_path).model_copy(update={"field_config": FieldConfig(status="Backlog")})
+    engine = SyncEngine(provider, renderer, config)
+
+    existing = await provider.create_item(
+        CreateItemInput(
+            title="Story",
+            body="\n".join(
+                [
+                    "PLANPILOT_META_V1",
+                    "PLAN_ID:plan-fields-2",
+                    "ITEM_ID:S1",
+                    "END_PLANPILOT_META",
+                    "",
+                    "# Story",
+                ]
+            ),
+            item_type=PlanItemType.STORY,
+            labels=[config.label],
+        )
+    )
+    plan = Plan(
+        items=[
+            PlanItem(
+                id="S1",
+                type=PlanItemType.STORY,
+                title="Story renamed",
+                fields={"Area": "Web"},
+            )
+        ]
+    )
+    sync_map = SyncMap(plan_id="plan-fields-2", target=config.target, board_url=config.board_url)
+    sync_map.entries["S1"] = SyncEntry(id=existing.id, key=existing.key, url=existing.url, item_type=PlanItemType.STORY)
+
+    await engine._enrich(plan, "plan-fields-2", sync_map, item_objects={"S1": existing})
+
+    # Only the item's explicit `fields` are pushed on update - the config-level "Backlog" default
+    # is not reapplied, so a Status a human moved on the live board is never overwritten by a rerun.
+    assert len(provider.update_calls) == 1
+    assert provider.update_calls[0][1].fields == {"Area": "Web"}
+
+
+@pytest.mark.asyncio
 async def test_set_relations_keeps_existing_pairs_when_touched_by_update(tmp_path: Path) -> None:
     provider = FakeProvider()
     renderer = FakeRenderer()

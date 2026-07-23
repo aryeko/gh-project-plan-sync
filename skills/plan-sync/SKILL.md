@@ -162,6 +162,7 @@ Every item **must** include a `type` field: `"EPIC"`, `"STORY"`, or `"TASK"`.
 | `success_metrics` | `string[]` | Measurable outcomes |
 | `assumptions` | `string[]` | Assumptions made during decomposition |
 | `risks` | `string[]` | Known risks or blockers |
+| `fields` | `object` | `{"<project field name>": "<option name>"}` — sets that item's project-board fields (e.g. `{"Priority": "High", "Area": "Web"}`) on any single-select or iteration field the target project has. Applied on create and on every update that touches the item. Unknown field/option names are skipped with a warning, not a sync failure. |
 
 ### JSON Rules
 

@@ -61,6 +61,7 @@ class CreateItemInput(BaseModel):
     item_type: PlanItemType
     labels: list[str] = Field(default_factory=list)
     size: str | None = None
+    fields: dict[str, str] = Field(default_factory=dict)
 
 
 class UpdateItemInput(BaseModel):
@@ -69,6 +70,7 @@ class UpdateItemInput(BaseModel):
     item_type: PlanItemType | None = None
     labels: list[str] | None = None
     size: str | None = None
+    fields: dict[str, str] = Field(default_factory=dict)
 
 
 class ItemSearchFilters(BaseModel):

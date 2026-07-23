@@ -187,6 +187,7 @@ async def _enrich_item(self, plan_item: PlanItem, plan_id: str) -> None:
             title=plan_item.title, body=body, item_type=plan_item.type,
             labels=[config.label],
             size=plan_item.estimate.tshirt if plan_item.estimate else None,
+            fields=dict(plan_item.fields),
         ))
 ```
 
@@ -196,9 +197,9 @@ async def _enrich_item(self, plan_item: PlanItem, plan_id: str) -> None:
 - Relations for unresolved references are skipped for that run with warnings
 
 **Reconciliation ownership:**
-- **Plan-authoritative:** `title`, `body`, `item_type`, `labels`, `size`, relations
+- **Plan-authoritative:** `title`, `body`, `item_type`, `labels`, `size`, a plan item's own `fields`, relations
 - **Labels:** Additive (`ensure config.label present`), not replace-all
-- **Provider-authoritative after create:** `status`, `priority`, `iteration` — not overwritten by Enrich
+- **Provider-authoritative after create:** `field_config.status`/`.priority`/`.iteration` run-level defaults — applied only at Create, never reapplied by Enrich, so a value a human or agent changed on the live board (e.g. Status moved during triage) is never silently overwritten by a rerun. A plan item's own `fields` entries are the one exception: they are plan-authoritative and are reapplied on every Enrich that touches the item, because they are an explicit instruction in version-controlled plan files, not a run-level default.
 
 ## Phase 4: Relations
 
