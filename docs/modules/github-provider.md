@@ -89,17 +89,17 @@ flowchart TD
 
 `CreateIssueInput` supports `labelIds`, `projectV2Ids`, `issueTypeId`, and `parentIssueId` directly. The previous implementation required 5+ sequential API calls per new issue:
 
-```
+```text
 create_issue -> set_issue_type -> add_labels (x N) -> add_project_item -> set_project_fields
 ```
 
-The optimized flow sets labels, issue type, and project in a single `createIssue` mutation. Only project field assignment (e.g. Size, Priority, or Iteration) requires follow-up calls:
+The optimized flow sets labels, issue type, and project in a single `createIssue` mutation. Project field assignment (e.g. Size, Priority, or Iteration) requires a lookup plus one follow-up mutation for each field:
 
-```
-create_issue(labelIds, issueTypeId, projectV2Ids) -> get_project_item_id -> set_project_fields
+```text
+create_issue(labelIds, issueTypeId, projectV2Ids) -> get_project_item_id -> set_project_field (per field)
 ```
 
-**5+ API calls reduced to 1-3** per new issue (1 if no project fields, 3 with a project field).
+**5+ API calls reduced to 1 + lookup + one update per project field** (one call if no project fields).
 
 For the `label` strategy, the type label (e.g. `type:epic`) is included in `labelIds` so it is also set atomically - no separate `addLabels` call is needed.
 
